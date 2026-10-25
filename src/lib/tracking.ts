@@ -2,28 +2,13 @@ import { and, eq, gte } from "drizzle-orm";
 
 import { db, openEvents, trackedEmails } from "@/db";
 import { env } from "@/lib/env";
+import type { ClientType } from "@/lib/client-type";
 
-export type ClientType =
-  | "gmail"
-  | "outlook"
-  | "yahoo"
-  | "apple_or_other"
-  | "unknown";
+export type { ClientType } from "@/lib/client-type";
+export { CLIENT_LABELS, getClientLabel } from "@/lib/client-type";
 
 /** Reserved id used by the deliverability self-check; never recorded. */
 export const HEALTHCHECK_ID = "healthcheck";
-
-export const CLIENT_LABELS: Record<ClientType, string> = {
-  gmail: "Gmail",
-  outlook: "Outlook",
-  yahoo: "Yahoo",
-  apple_or_other: "Apple Mail / navigateur",
-  unknown: "Client inconnu",
-};
-
-export function getClientLabel(client: string): string {
-  return CLIENT_LABELS[client as ClientType] ?? client;
-}
 
 export const USER_AGENT_MAX_LENGTH = 300;
 

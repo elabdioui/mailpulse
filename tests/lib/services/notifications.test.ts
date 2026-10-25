@@ -50,6 +50,7 @@ vi.mock("@/db", () => ({
 
 const {
   listUnreadNotifications,
+  markEmailOpensAsRead,
   markNotificationsRead,
   markReadSchema,
   notificationsQuerySchema,
@@ -115,5 +116,21 @@ describe("markNotificationsRead", () => {
     updateReturningRows = [{ id: 5 }];
     const count = await markNotificationsRead([5]);
     expect(count).toBe(1);
+  });
+});
+
+describe("markEmailOpensAsRead", () => {
+  it("returns the number of opens marked read", async () => {
+    updateReturningRows = [{ id: 1 }, { id: 2 }, { id: 3 }];
+    const count = await markEmailOpensAsRead("e1");
+    expect(count).toBe(3);
+    expect(updateSet).toHaveBeenCalledWith(
+      expect.objectContaining({ seenAt: expect.any(Date) }),
+    );
+  });
+
+  it("returns 0 when there was nothing unread", async () => {
+    updateReturningRows = [];
+    expect(await markEmailOpensAsRead("e1")).toBe(0);
   });
 });

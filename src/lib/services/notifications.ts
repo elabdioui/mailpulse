@@ -71,3 +71,14 @@ export async function markNotificationsRead(
 
   return updated.length;
 }
+
+/** Marks every unread open of one email as read (viewing its detail page). */
+export async function markEmailOpensAsRead(emailId: string): Promise<number> {
+  const updated = await db
+    .update(openEvents)
+    .set({ seenAt: new Date() })
+    .where(and(eq(openEvents.emailId, emailId), isNull(openEvents.seenAt)))
+    .returning({ id: openEvents.id });
+
+  return updated.length;
+}

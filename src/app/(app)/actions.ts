@@ -9,6 +9,7 @@ import {
   updateEmail,
   type CreateEmailResult,
 } from "@/lib/services/emails";
+import { markEmailOpensAsRead } from "@/lib/services/notifications";
 
 export interface CreateEmailState {
   error?: string;
@@ -55,4 +56,8 @@ export async function updateEmailFieldsAction(
   await updateEmail(id, patch);
   revalidatePath("/");
   revalidatePath(`/emails/${id}`);
+}
+
+export async function markEmailOpensReadAction(emailId: string): Promise<number> {
+  return markEmailOpensAsRead(emailId);
 }

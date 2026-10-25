@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { EmailRowActions } from "@/components/emails/email-row-actions";
 import { InlineEditField } from "@/components/emails/inline-edit-field";
+import { MarkEmailOpensRead } from "@/components/emails/mark-email-opens-read";
 import { StatusBadge } from "@/components/emails/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeTime } from "@/components/relative-time";
@@ -27,6 +28,7 @@ export default async function EmailDetailPage({
 
   return (
     <div className="space-y-6">
+      <MarkEmailOpensRead emailId={email.id} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
           <InlineEditField
