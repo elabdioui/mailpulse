@@ -9,7 +9,7 @@ import { EmptyState } from "@/components/empty-state";
 import { formatExactFr } from "@/lib/datetime";
 import { env } from "@/lib/env";
 import { buildPixelUrl } from "@/lib/pixel";
-import { listEmails } from "@/lib/services/emails";
+import { isFollowUpDue, listEmails } from "@/lib/services/emails";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,11 @@ export default async function DashboardPage({
   const sp = await searchParams;
   const q = typeof sp.q === "string" && sp.q.trim() ? sp.q.trim() : undefined;
   const status =
-    sp.status === "opened" || sp.status === "pending" ? sp.status : undefined;
+    sp.status === "opened" ||
+    sp.status === "pending" ||
+    sp.status === "follow_up"
+      ? sp.status
+      : undefined;
   const archived = sp.archived === "true";
 
   const [baseline, rows] = await Promise.all([
@@ -60,8 +64,14 @@ export default async function DashboardPage({
     id: row.id,
     label: row.label,
     recipient: row.recipient,
+    sender: row.sender,
     archived: row.archived,
     opens: row.opens,
+    followUpDue: isFollowUpDue(row, now),
+    followUpAtIso: row.followUpAt ? row.followUpAt.toISOString() : null,
+    followUpAtExact: row.followUpAt
+      ? formatExactFr(row.followUpAt, env.APP_TIMEZONE)
+      : null,
     pixelUrl: buildPixelUrl(row.id),
     createdAtIso: row.createdAt.toISOString(),
     createdAtExact: formatExactFr(row.createdAt, env.APP_TIMEZONE),

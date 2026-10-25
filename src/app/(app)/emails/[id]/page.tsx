@@ -10,7 +10,7 @@ import { RelativeTime } from "@/components/relative-time";
 import { formatExactFr } from "@/lib/datetime";
 import { env } from "@/lib/env";
 import { buildPixelUrl } from "@/lib/pixel";
-import { getEmailById } from "@/lib/services/emails";
+import { getEmailById, isFollowUpDue } from "@/lib/services/emails";
 import { getClientLabel } from "@/lib/tracking";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +39,10 @@ export default async function EmailDetailPage({
             className="h-auto border-none p-0 text-2xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
           />
           <div className="flex items-center gap-2">
-            <StatusBadge opens={email.opens} />
+            <StatusBadge
+              opens={email.opens}
+              followUpDue={isFollowUpDue(email)}
+            />
             {email.archived ? (
               <span className="text-xs text-muted-foreground">Archivé</span>
             ) : null}
@@ -66,6 +69,28 @@ export default async function EmailDetailPage({
             placeholder="rh@societe-x.com"
           />
         </div>
+        {email.sender || email.subject || email.followUpAt ? (
+          <dl className="grid gap-2 text-sm sm:col-span-2 sm:grid-cols-3">
+            {email.sender ? (
+              <div>
+                <dt className="font-medium text-muted-foreground">Expéditeur</dt>
+                <dd className="truncate">{email.sender}</dd>
+              </div>
+            ) : null}
+            {email.subject ? (
+              <div>
+                <dt className="font-medium text-muted-foreground">Objet</dt>
+                <dd className="truncate">{email.subject}</dd>
+              </div>
+            ) : null}
+            {email.followUpAt ? (
+              <div>
+                <dt className="font-medium text-muted-foreground">Relance si pas ouvert</dt>
+                <dd>{formatExactFr(email.followUpAt, env.APP_TIMEZONE)}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
         <div className="space-y-2 sm:col-span-2">
           <label className="text-sm font-medium text-muted-foreground">
             Notes

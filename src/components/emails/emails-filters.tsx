@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface EmailsFiltersValue {
   q?: string;
-  status?: "opened" | "pending";
+  status?: "opened" | "pending" | "follow_up";
   archived: boolean;
 }
 
@@ -61,7 +61,7 @@ export function EmailsFilters({ q, status, archived }: EmailsFiltersValue) {
           type="search"
           name="q"
           defaultValue={q ?? ""}
-          placeholder="Rechercher un libellé ou un destinataire…"
+          placeholder="Rechercher un libellé, un objet ou une adresse…"
           className="h-8 w-full rounded-lg border border-input bg-transparent py-1 pr-2.5 pl-8 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
       </form>
@@ -84,6 +84,12 @@ export function EmailsFilters({ q, status, archived }: EmailsFiltersValue) {
           active={status === "pending"}
         >
           En attente
+        </Pill>
+        <Pill
+          href={buildHref({ q, archived, status: "follow_up" })}
+          active={status === "follow_up"}
+        >
+          À relancer
         </Pill>
       </div>
     </div>

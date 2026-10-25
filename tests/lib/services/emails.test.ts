@@ -27,6 +27,7 @@ function makeSelectChain() {
   chain.innerJoin = self;
   chain.where = self;
   chain.groupBy = self;
+  chain.having = self;
   chain.orderBy = self;
   chain.limit = self;
   chain.then = (
@@ -68,10 +69,14 @@ const {
   createEmailSchema,
   deleteEmail,
   getEmailById,
+  isFollowUpDue,
+  listDueFollowUps,
   listEmails,
   listEmailsQuerySchema,
   updateEmail,
   updateEmailSchema,
+  markFollowUpsNotified,
+  markFollowUpsReadSchema,
 } = await import("@/lib/services/emails");
 
 describe("createEmailSchema", () => {
@@ -226,5 +231,108 @@ describe("deleteEmail", () => {
   it("returns true when a row was deleted", async () => {
     deleteReturningRows = [{ id: "e1" }];
     expect(await deleteEmail("e1")).toBe(true);
+  });
+});
+
+describe("extension fields", () => {
+  beforeEach(() => {
+    insertValues.mockClear();
+  });
+
+  it("accepts sender, subject, source and followUpDays", () => {
+    const result = createEmailSchema.safeParse({
+      label: "Devis",
+      sender: "moi@gmail.com",
+      subject: "Devis",
+      source: "extension",
+      followUpDays: 3,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an out-of-range followUpDays or unknown source", () => {
+    expect(
+      createEmailSchema.safeParse({ label: "x", followUpDays: 0 }).success,
+    ).toBe(false);
+    expect(
+      createEmailSchema.safeParse({ label: "x", source: "bogus" }).success,
+    ).toBe(false);
+  });
+
+  it("stores the extension metadata and computes followUpAt", async () => {
+    await createEmail({
+      label: "Devis",
+      sender: "moi@gmail.com",
+      subject: "Devis",
+      source: "extension",
+      followUpDays: 3,
+    });
+    const inserted = insertValues.mock.calls[0][0] as {
+      sender: string | null;
+      subject: string | null;
+      source: string;
+      createdAt: Date;
+      followUpAt: Date | null;
+    };
+    expect(inserted.sender).toBe("moi@gmail.com");
+    expect(inserted.subject).toBe("Devis");
+    expect(inserted.source).toBe("extension");
+    expect(
+      inserted.followUpAt!.getTime() - inserted.createdAt.getTime(),
+    ).toBe(3 * 24 * 60 * 60 * 1000);
+  });
+
+  it("defaults to a manual email without follow-up", async () => {
+    await createEmail({ label: "Manuel" });
+    const inserted = insertValues.mock.calls[0][0] as {
+      source: string;
+      followUpAt: Date | null;
+    };
+    expect(inserted.source).toBe("manual");
+    expect(inserted.followUpAt).toBeNull();
+  });
+});
+
+describe("isFollowUpDue", () => {
+  const now = new Date("2026-01-10T00:00:00Z");
+
+  it("is due once the deadline passed without any open", () => {
+    expect(
+      isFollowUpDue({ followUpAt: new Date("2026-01-09T00:00:00Z"), opens: 0 }, now),
+    ).toBe(true);
+  });
+
+  it("is not due before the deadline, once opened, or without follow-up", () => {
+    expect(
+      isFollowUpDue({ followUpAt: new Date("2026-01-11T00:00:00Z"), opens: 0 }, now),
+    ).toBe(false);
+    expect(
+      isFollowUpDue({ followUpAt: new Date("2026-01-09T00:00:00Z"), opens: 1 }, now),
+    ).toBe(false);
+    expect(isFollowUpDue({ followUpAt: null, opens: 0 }, now)).toBe(false);
+  });
+});
+
+describe("follow-ups", () => {
+  it("lists due follow-ups and drops rows without a deadline", async () => {
+    selectRows = [
+      { id: "a", label: "A", recipient: null, followUpAt: new Date() },
+      { id: "b", label: "B", recipient: null, followUpAt: null },
+    ];
+    const rows = await listDueFollowUps();
+    expect(rows.map((row) => row.id)).toEqual(["a"]);
+  });
+
+  it("marks follow-ups as notified", async () => {
+    updateReturningRows = [{ id: "a" }, { id: "b" }];
+    expect(await markFollowUpsNotified(["a", "b"])).toBe(2);
+    expect(updateSet).toHaveBeenLastCalledWith({
+      followUpNotifiedAt: expect.any(Date),
+    });
+  });
+
+  it("requires at least one id to mark", () => {
+    expect(markFollowUpsReadSchema.safeParse({ ids: [] }).success).toBe(false);
+    expect(markFollowUpsReadSchema.safeParse({ ids: ["a"] }).success).toBe(true);
   });
 });

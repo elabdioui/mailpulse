@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Options · MailPulse</title>
+    <link rel="stylesheet" href="ui.css" />
+    <style>
+      body { padding: 32px 16px; }
+      main { max-width: 480px; margin: 0 auto; display: grid; gap: 16px; }
+      form { display: grid; gap: 14px; }
+      .hint { font-size: 12px; font-weight: 400; }
+      .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1><img src="icons/icon-48.png" alt="" />MailPulse · options</h1>
+      <p class="muted" style="margin: 0">
+        Relie l'extension à ton tableau de bord MailPulse. Une fois configurée,
+        chaque mail envoyé depuis Gmail est suivi automatiquement.
+      </p>
+      <form id="form">
+        <label>
+          URL du tableau de bord
+          <input type="url" id="baseUrl" placeholder="https://mailpulse.vercel.app" required />
+          <span class="hint muted">La même valeur que PUBLIC_BASE_URL.</span>
+        </label>
+        <label>
+          Token API
+          <input type="password" id="token" autocomplete="off" required />
+          <span class="hint muted">La valeur de API_TOKEN dans les variables d'environnement du tableau de bord.</span>
+        </label>
+        <label>
+          Relance proposée par défaut
+          <select id="defaultFollowUp">
+            <option value="0">Non</option>
+            <option value="1">1 jour</option>
+            <option value="3">3 jours</option>
+            <option value="7">7 jours</option>
+          </select>
+        </label>
+        <label class="switch">
+          Suivi automatique activé
+          <input type="checkbox" id="enabled" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="primary">Enregistrer et tester</button>
+          <span id="status" role="status"></span>
+        </div>
+      </form>
+      <p class="hint muted" style="margin: 0">
+        Après l'installation, recharge les onglets Gmail déjà ouverts pour activer l'extension.
+      </p>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

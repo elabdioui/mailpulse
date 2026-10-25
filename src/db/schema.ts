@@ -18,6 +18,13 @@ export const trackedEmails = pgTable("tracked_emails", {
     .defaultNow(),
   armedAt: timestamp("armed_at", { withTimezone: true }).notNull(),
   archived: boolean("archived").notNull().default(false),
+  sender: text("sender"),
+  subject: text("subject"),
+  source: text("source").notNull().default("manual"),
+  followUpAt: timestamp("follow_up_at", { withTimezone: true }),
+  followUpNotifiedAt: timestamp("follow_up_notified_at", {
+    withTimezone: true,
+  }),
 });
 
 export const openEvents = pgTable(

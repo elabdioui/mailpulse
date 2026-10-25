@@ -16,8 +16,12 @@ export interface EmailTableRow {
   id: string;
   label: string;
   recipient: string | null;
+  sender: string | null;
   archived: boolean;
   opens: number;
+  followUpDue: boolean;
+  followUpAtIso: string | null;
+  followUpAtExact: string | null;
   pixelUrl: string;
   createdAtIso: string;
   createdAtExact: string;
@@ -33,9 +37,11 @@ export function EmailsTable({ rows }: { rows: EmailTableRow[] }) {
           <TableRow className="hover:bg-transparent">
             <TableHead>Libellé</TableHead>
             <TableHead>Destinataire</TableHead>
+            <TableHead>Expéditeur</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead>Créé</TableHead>
             <TableHead>Dernière ouverture</TableHead>
+            <TableHead>Relance</TableHead>
             <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
@@ -53,8 +59,11 @@ export function EmailsTable({ rows }: { rows: EmailTableRow[] }) {
               <TableCell className="max-w-48 truncate text-muted-foreground">
                 {row.recipient ?? "—"}
               </TableCell>
+              <TableCell className="max-w-48 truncate text-muted-foreground">
+                {row.sender ?? "—"}
+              </TableCell>
               <TableCell>
-                <StatusBadge opens={row.opens} />
+                <StatusBadge opens={row.opens} followUpDue={row.followUpDue} />
               </TableCell>
               <TableCell className="text-muted-foreground">
                 <RelativeTime
@@ -67,6 +76,16 @@ export function EmailsTable({ rows }: { rows: EmailTableRow[] }) {
                   <RelativeTime
                     iso={row.lastOpenedAtIso}
                     exact={row.lastOpenedAtExact ?? ""}
+                  />
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {row.followUpAtIso && row.opens === 0 ? (
+                  <RelativeTime
+                    iso={row.followUpAtIso}
+                    exact={row.followUpAtExact ?? ""}
                   />
                 ) : (
                   "—"
