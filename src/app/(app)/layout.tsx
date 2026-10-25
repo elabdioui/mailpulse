@@ -1,4 +1,4 @@
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
 
 import { logout } from "@/app/(auth)/login/actions";
@@ -19,6 +19,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               MailPulse
             </Link>
             <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" render={<Link href="/deliverability" />}>
+                <ShieldCheckIcon />
+                <span className="sr-only">Délivrabilité</span>
+              </Button>
               <NotificationBell />
               <ThemeToggle />
               <form action={logout}>
